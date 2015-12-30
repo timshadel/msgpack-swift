@@ -12,7 +12,7 @@ A Swift 2.2 package implementation of msgpack. [msgpack][msgpack] is a very fast
 Pack:
 
 ```swift
-let data = try Packer().pack("Hello, world!")
+let data = try "Hello, world!".pack(NSMutableData())
 // => <ad48656c 6c6f2c20 776f726c 6421>
 ```
 

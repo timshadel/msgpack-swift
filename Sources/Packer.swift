@@ -10,23 +10,9 @@ public protocol MsgPackValueType {
 }
 
 public enum MsgPackError: ErrorType {
-    case UnsupportedValue(MsgPackValueType)
+    case UnsupportedValue(Any)
     case NonUTF8StringValue(String)
     case ValueTooLong(Any)
-}
-
-struct Packer {
-
-    func pack(object: MsgPackValueType) throws -> NSData {
-        let data = NSMutableData()
-        return try object.pack(data)
-    }
-
-    func pack<T: MsgPackValueType>(array: Array<T>) throws -> NSData {
-        let data = NSMutableData()
-        return try array.pack(data)
-    }
-
 }
 
 
@@ -270,8 +256,7 @@ extension NSData: MsgPackValueType {
 
 }
 
-/// Sadly, this does not allow for nested arrays. Ideas welcome.
-extension Array where Element: MsgPackValueType {
+extension Array: MsgPackValueType {
 
     public func pack(data: NSMutableData) throws -> NSMutableData {
         let length = self.count
@@ -292,7 +277,48 @@ extension Array where Element: MsgPackValueType {
             throw MsgPackError.ValueTooLong(self)
         }
         for object in self {
-            try object.pack(data)
+            if let item = object as? MsgPackValueType {
+                try item.pack(data)
+            } else {
+                throw MsgPackError.UnsupportedValue(object)
+            }
+        }
+        return data
+    }
+
+}
+
+extension Dictionary: MsgPackValueType {
+
+    public func pack(data: NSMutableData) throws -> NSMutableData {
+        let length = self.count
+        if length < 16 {
+            var type = 0b10000000 + length
+            data.appendBytes(&type, length: 1)
+        } else if length <= Int(UInt16.max) {
+            var type = 0xde
+            var len = CFSwapInt16HostToBig(UInt16(length))
+            data.appendBytes(&type, length: 1)
+            data.appendBytes(&len, length: 2)
+        } else if length <= Int(UInt32.max) {
+            var type = 0xdf
+            var len = CFSwapInt32HostToBig(UInt32(length))
+            data.appendBytes(&type, length: 1)
+            data.appendBytes(&len, length: 4)
+        } else {
+            throw MsgPackError.ValueTooLong(self)
+        }
+        for (k, v) in self {
+            if let key = k as? MsgPackValueType {
+                if let value = v as? MsgPackValueType {
+                    try key.pack(data)
+                    try value.pack(data)
+                } else {
+                    throw MsgPackError.UnsupportedValue(v)
+                }
+            } else {
+                throw MsgPackError.UnsupportedValue(k)
+            }
         }
         return data
     }
