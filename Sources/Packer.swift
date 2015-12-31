@@ -191,6 +191,16 @@ extension Bool: MsgPackValueType {
 
 }
 
+extension NSNull: MsgPackValueType {
+
+    public func pack(data: NSMutableData) -> NSMutableData {
+        var value = 0xc0
+        data.appendBytes(&value, length: 1)
+        return data
+    }
+
+}
+
 extension String: MsgPackValueType {
 
     public func pack(data: NSMutableData) throws -> NSMutableData {
