@@ -169,17 +169,17 @@ extension Float: MsgPackValueType {
 
 }
 
-// extension Double: MsgPackValueType {
-//
-//     public func pack(data: NSMutableData) -> NSMutableData {
-//         var type = 0xcb
-//         var value = CFConvertDoubleSwappedToHost(Float64(self))
-//         data.appendBytes(&type, length: 1)
-//         data.appendBytes(&value, length: 8)
-//         return data
-//     }
-//
-// }
+extension Double: MsgPackValueType {
+
+    public func pack(data: NSMutableData) -> NSMutableData {
+        var type = 0xcb
+        var value = CFConvertDoubleHostToSwapped(self)
+        data.appendBytes(&type, length: 1)
+        data.appendBytes(&value, length: 8)
+        return data
+    }
+
+}
 
 extension Bool: MsgPackValueType {
 
