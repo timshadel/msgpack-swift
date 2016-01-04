@@ -19,6 +19,10 @@ extension Int: MsgPackValueType {
         }
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -37,6 +41,10 @@ extension Int8: MsgPackValueType {
         return data
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -48,6 +56,10 @@ extension Int16: MsgPackValueType {
         data.appendBytes(&type, length: 1)
         data.appendBytes(&value, length: 2)
         return data
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }
@@ -63,6 +75,10 @@ extension Int32: MsgPackValueType {
         return data
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -74,6 +90,10 @@ extension Int64: MsgPackValueType {
         data.appendBytes(&type, length: 1)
         data.appendBytes(&value, length: 8)
         return data
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }
@@ -91,6 +111,10 @@ extension UInt: MsgPackValueType {
         } else {
             return UInt64(self).pack(data)
         }
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }
@@ -111,6 +135,10 @@ extension UInt8: MsgPackValueType {
         return data
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -122,6 +150,10 @@ extension UInt16: MsgPackValueType {
         data.appendBytes(&type, length: 1)
         data.appendBytes(&value, length: 2)
         return data
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }
@@ -137,6 +169,10 @@ extension UInt32: MsgPackValueType {
         return data
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -148,6 +184,10 @@ extension UInt64: MsgPackValueType {
         data.appendBytes(&type, length: 1)
         data.appendBytes(&value, length: 8)
         return data
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }

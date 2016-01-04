@@ -15,6 +15,10 @@ extension Float: MsgPackValueType {
         return data
     }
 
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
+    }
+
 }
 
 
@@ -26,6 +30,10 @@ extension Double: MsgPackValueType {
         data.appendBytes(&type, length: 1)
         data.appendBytes(&value, length: 8)
         return data
+    }
+
+    public static func unpack(data: NSData) throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(data)
     }
 
 }
