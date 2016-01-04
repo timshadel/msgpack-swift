@@ -20,7 +20,9 @@ extension Int: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length <= 9 else { throw MsgPackError.UnsupportedValue(data) }
+
+        return try data.unpack()
     }
 
 }
@@ -42,7 +44,20 @@ extension Int8: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length <= 2 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+
+        if type >= 0b11100000 {
+            return Int8(bitPattern: type)
+        } else if type == 0xd0 {
+            var value: Int8 = 0
+            data.getBytes(&value, range: NSMakeRange(1, 1))
+            return value
+        } else {
+            throw MsgPackError.UnsupportedValue(data)
+        }
     }
 
 }
@@ -59,7 +74,15 @@ extension Int16: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 3 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xd1 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt16 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 2))
+        return Int16(bitPattern: CFSwapInt16BigToHost(value))
     }
 
 }
@@ -76,7 +99,15 @@ extension Int32: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 5 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xd2 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt32 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 4))
+        return Int32(bitPattern: CFSwapInt32BigToHost(value))
     }
 
 }
@@ -93,7 +124,15 @@ extension Int64: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 9 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xd3 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt64 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 8))
+        return Int64(bitPattern: CFSwapInt64BigToHost(value))
     }
 
 }
@@ -114,7 +153,9 @@ extension UInt: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length <= 9 else { throw MsgPackError.UnsupportedValue(data) }
+
+        return try data.unpack()
     }
 
 }
@@ -136,7 +177,20 @@ extension UInt8: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length <= 2 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+
+        if type < 0b10000000 {
+            return type
+        } else if type == 0xcc {
+            var value: UInt8 = 0
+            data.getBytes(&value, range: NSMakeRange(1, 1))
+            return value
+        } else {
+            throw MsgPackError.UnsupportedValue(data)
+        }
     }
 
 }
@@ -153,7 +207,15 @@ extension UInt16: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 3 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xcd else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt16 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 2))
+        return CFSwapInt16BigToHost(value)
     }
 
 }
@@ -170,7 +232,15 @@ extension UInt32: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 5 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xce else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt32 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 4))
+        return CFSwapInt32BigToHost(value)
     }
 
 }
@@ -187,7 +257,15 @@ extension UInt64: MsgPackValueType {
     }
 
     public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
+        guard data.length == 9 else { throw MsgPackError.UnsupportedValue(data) }
+
+        var type: UInt8 = 0
+        data.getBytes(&type, length: 1)
+        guard type == 0xcf else { throw MsgPackError.UnsupportedValue(data) }
+
+        var value: UInt64 = 0
+        data.getBytes(&value, range: NSMakeRange(1, 8))
+        return CFSwapInt64BigToHost(value)
     }
 
 }

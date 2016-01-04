@@ -36,4 +36,8 @@ extension NSData: MsgPackValueType {
         throw MsgPackError.UnsupportedValue(data)
     }
 
+    public func unpack() throws -> MsgPackValueType {
+        throw MsgPackError.UnsupportedValue(self)
+    }
+
 }
