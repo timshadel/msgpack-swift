@@ -40,8 +40,4 @@ extension Dictionary: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        throw MsgPackError.UnsupportedValue(data)
-    }
-
 }

@@ -13,14 +13,4 @@ extension NSNull: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 1 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var bytes: UInt8 = 0
-        data.getBytes(&bytes, length: 1)
-        guard bytes == 0xc0 else { throw MsgPackError.UnsupportedValue(data) }
-
-        return NSNull()
-    }
-
 }

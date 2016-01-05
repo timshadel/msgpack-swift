@@ -13,18 +13,4 @@ extension Bool: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 1 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var bytes: UInt8 = 0
-        data.getBytes(&bytes, length: 1)
-        if bytes == 0xc3 {
-            return true
-        } else if bytes == 0xc2 {
-            return false
-        } else {
-            throw MsgPackError.UnsupportedValue(data)
-        }
-    }
-
 }

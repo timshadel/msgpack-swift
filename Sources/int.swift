@@ -19,12 +19,6 @@ extension Int: MsgPackValueType {
         }
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length <= 9 else { throw MsgPackError.UnsupportedValue(data) }
-
-        return try data.unpack()
-    }
-
 }
 
 
@@ -43,21 +37,9 @@ extension Int8: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length <= 2 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-
-        if type >= 0b11100000 {
-            return Int8(bitPattern: type)
-        } else if type == 0xd0 {
-            var value: Int8 = 0
-            data.getBytes(&value, range: NSMakeRange(1, 1))
-            return value
-        } else {
-            throw MsgPackError.UnsupportedValue(data)
-        }
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Int8 {
+        let value = try UInt8.unpack(&generator)
+        return Int8(bitPattern: value)
     }
 
 }
@@ -73,16 +55,9 @@ extension Int16: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 3 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xd1 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var value: UInt16 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 2))
-        return Int16(bitPattern: CFSwapInt16BigToHost(value))
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Int16 {
+        let value = try UInt16.unpack(&generator)
+        return Int16(bitPattern: value)
     }
 
 }
@@ -98,16 +73,9 @@ extension Int32: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 5 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xd2 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var value: UInt32 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 4))
-        return Int32(bitPattern: CFSwapInt32BigToHost(value))
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Int32 {
+        let value = try UInt32.unpack(&generator)
+        return Int32(bitPattern: value)
     }
 
 }
@@ -123,16 +91,9 @@ extension Int64: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 9 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xd3 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var value: UInt64 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 8))
-        return Int64(bitPattern: CFSwapInt64BigToHost(value))
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Int64 {
+        let value = try UInt64.unpack(&generator)
+        return Int64(bitPattern: value)
     }
 
 }
@@ -150,12 +111,6 @@ extension UInt: MsgPackValueType {
         } else {
             return UInt64(self).pack(data)
         }
-    }
-
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length <= 9 else { throw MsgPackError.UnsupportedValue(data) }
-
-        return try data.unpack()
     }
 
 }
@@ -176,21 +131,9 @@ extension UInt8: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length <= 2 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-
-        if type < 0b10000000 {
-            return type
-        } else if type == 0xcc {
-            var value: UInt8 = 0
-            data.getBytes(&value, range: NSMakeRange(1, 1))
-            return value
-        } else {
-            throw MsgPackError.UnsupportedValue(data)
-        }
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> UInt8 {
+        guard let value = generator.next() else { throw MsgPackError.NotEnoughData }
+        return value
     }
 
 }
@@ -206,16 +149,13 @@ extension UInt16: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 3 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xcd else { throw MsgPackError.UnsupportedValue(data) }
-
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> UInt16 {
         var value: UInt16 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 2))
-        return CFSwapInt16BigToHost(value)
+        for _ in 0..<2 {
+          guard let byte = generator.next() else { throw MsgPackError.NotEnoughData }
+          value = value << 8 | UInt16(byte)
+        }
+        return value
     }
 
 }
@@ -231,16 +171,13 @@ extension UInt32: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 5 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xce else { throw MsgPackError.UnsupportedValue(data) }
-
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> UInt32 {
         var value: UInt32 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 4))
-        return CFSwapInt32BigToHost(value)
+        for _ in 0..<4 {
+          guard let byte = generator.next() else { throw MsgPackError.NotEnoughData }
+          value = value << 8 | UInt32(byte)
+        }
+        return value
     }
 
 }
@@ -256,16 +193,13 @@ extension UInt64: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 9 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xcf else { throw MsgPackError.UnsupportedValue(data) }
-
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> UInt64 {
         var value: UInt64 = 0
-        data.getBytes(&value, range: NSMakeRange(1, 8))
-        return CFSwapInt64BigToHost(value)
+        for _ in 0..<8 {
+          guard let byte = generator.next() else { throw MsgPackError.NotEnoughData }
+          value = value << 8 | UInt64(byte)
+        }
+        return value
     }
 
 }

@@ -15,16 +15,9 @@ extension Float: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 5 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xca else { throw MsgPackError.UnsupportedValue(data) }
-
-        var value: CFSwappedFloat32 = CFSwappedFloat32(v: 0)
-        data.getBytes(&value, range: NSMakeRange(1, 4))
-        return CFConvertFloat32SwappedToHost(value)
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Float {
+        let value = try UInt32.unpack(&generator)
+        return unsafeBitCast(value, Float.self)
     }
 
 }
@@ -40,16 +33,9 @@ extension Double: MsgPackValueType {
         return data
     }
 
-    public static func unpack(data: NSData) throws -> MsgPackValueType {
-        guard data.length == 9 else { throw MsgPackError.UnsupportedValue(data) }
-
-        var type: UInt8 = 0
-        data.getBytes(&type, length: 1)
-        guard type == 0xcb else { throw MsgPackError.UnsupportedValue(data) }
-
-        var value: CFSwappedFloat64 = CFSwappedFloat64(v: 0)
-        data.getBytes(&value, range: NSMakeRange(1, 8))
-        return CFConvertFloat64SwappedToHost(value)
+    public static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> Double {
+        let value = try UInt64.unpack(&generator)
+        return unsafeBitCast(value, Double.self)
     }
 
 }
