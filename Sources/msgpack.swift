@@ -19,14 +19,14 @@ extension NSData {
 
     public func unpack() throws -> MsgPackValueType {
         var generator = NSDataByteGenerator(data: self)
-        return try unpack(&generator)
+        return try NSData.unpack(&generator)
     }
 
 }
 
-private extension NSData {
+internal extension NSData {
 
-    func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> MsgPackValueType {
+    static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G) throws -> MsgPackValueType {
         guard let type = generator.next() else { throw MsgPackError.NotEnoughData }
 
         switch type {
@@ -42,6 +42,9 @@ private extension NSData {
         // fixmap
 
         // fixarray
+        case 0x90...0x9f:
+            let count = Int(type - 0x90)
+            return try Array<MsgPackValueType>.unpack(&generator, count: count)
 
         // fixstr
         case 0xa0...0xbf:
@@ -129,18 +132,24 @@ private extension NSData {
             return try String.unpack(&generator, length: Int(length))
 
         // str16
-        case 0xd9:
+        case 0xda:
             let length = try UInt16.unpack(&generator)
             return try String.unpack(&generator, length: Int(length))
 
         // str32
-        case 0xd9:
+        case 0xdb:
             let length = try UInt32.unpack(&generator)
             return try String.unpack(&generator, length: Int(length))
 
         // array16
+        case 0xdc:
+            let count = try UInt16.unpack(&generator)
+            return try Array<MsgPackValueType>.unpack(&generator, count: Int(count))
 
         // array32
+        case 0xdd:
+            let count = try UInt32.unpack(&generator)
+            return try Array<MsgPackValueType>.unpack(&generator, count: Int(count))
 
         // map16
 

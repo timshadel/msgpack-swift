@@ -35,4 +35,15 @@ extension Array: MsgPackValueType {
         return data
     }
 
+
+    static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G, count: Int) throws -> [MsgPackValueType] {
+        var result = [MsgPackValueType]()
+        for _ in 0..<count {
+            let value = try NSData.unpack(&generator)
+            result.append(value)
+        }
+
+        return result
+    }
+
 }
