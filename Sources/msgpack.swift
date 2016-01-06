@@ -40,6 +40,9 @@ internal extension NSData {
             return Int8(bitPattern: type)
 
         // fixmap
+        case 0x80...0x8f:
+            let count = Int(type - 0x80)
+            return try Dictionary<String, MsgPackValueType>.unpack(&generator, count: count)
 
         // fixarray
         case 0x90...0x9f:
@@ -152,8 +155,14 @@ internal extension NSData {
             return try Array<MsgPackValueType>.unpack(&generator, count: Int(count))
 
         // map16
+        case 0xde:
+            let count = try UInt16.unpack(&generator)
+            return try Dictionary<String, MsgPackValueType>.unpack(&generator, count: Int(count))
 
         // map32
+        case 0xdf:
+            let count = try UInt32.unpack(&generator)
+            return try Dictionary<String, MsgPackValueType>.unpack(&generator, count: Int(count))
 
         default:
             throw MsgPackError.UnsupportedValue(type)

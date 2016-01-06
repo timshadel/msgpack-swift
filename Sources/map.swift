@@ -40,4 +40,17 @@ extension Dictionary: MsgPackValueType {
         return data
     }
 
+
+    static func unpack<G: GeneratorType where G.Element == UInt8>(inout generator: G, count: Int) throws -> [String:MsgPackValueType] {
+        var result = [String:MsgPackValueType]()
+        for _ in 0..<count {
+            let keyItem = try NSData.unpack(&generator)
+            guard let key = keyItem as? String else { throw MsgPackError.UnsupportedValue(keyItem) }
+            let value = try NSData.unpack(&generator)
+            result[key] = value
+        }
+
+        return result
+    }
+
 }
